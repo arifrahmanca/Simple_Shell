@@ -111,26 +111,9 @@ char** get_history(char **args, int *interval) {
             printf("History is blank.\n");
             return args;
         }
-    } else if(args[1] == NULL && args[0][0] == '!') {
-        int k;
-        char *ch = &(args[0][1]);
-        if(sscanf(ch, "%d", &k) == 1) {
-            if(k > 0 && buffIndex > k-1 && k > buffIndex-9) {
-                strcpy(args[0], history[(k-1)%10][0]);
-                for(i = 1; history[(k-1)%10][i] != NULL; i++) {
-                    args[i] = (char*)malloc((MAX_LINE+1)*sizeof(char));
-                    strcpy(args[i], history[(k-1)%10][i]);
-                }
-                args[i] = NULL;
-                *interval = history_list[(k-1)%10];
-            } else {
-                printf("Invalid history index.\n");
-                return args;
-            }
-        } else {
+    } else {
             printf("Invalid history index.\n");
             return args;
-        }
     }
 
     for(i = 0; i<(MAX_LINE/2+1) && history[buffIndex%10][i] != NULL; i++)
