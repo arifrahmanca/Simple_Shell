@@ -26,7 +26,7 @@ int main(void)
     while (should_run){
         printf("mysh:$ ");
         fflush(stdout);
-
+	    
         pid_t pid;
 
         char line[MAX_LINE + 1];
