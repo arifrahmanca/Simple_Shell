@@ -82,7 +82,7 @@ int main(void)
             return 1;
         } else if(pid == 0) {
             execvp(ch2[0],ch2);
-            printf("Child Process Created.\n");
+            // printf("Child Process Created.\n");
             return 1;
         } else {
             if(waitTime) {
@@ -112,7 +112,7 @@ char** get_history(char **args, int *interval) {
             return args;
         }
     } else {
-            printf("Invalid history index.\n");
+            printf("Command is invalid\n");
             return args;
     }
 
