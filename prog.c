@@ -19,7 +19,7 @@ char** get_history(char** args, int *interval);
 
 int main(void)
 {
-	char *args[MAX_LINE/2 + 1];
+    char *args[MAX_LINE/2 + 1];
     int should_run = 1;
 
     create_history();
