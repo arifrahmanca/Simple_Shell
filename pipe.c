@@ -1,14 +1,3 @@
-/*
-ASSIGNMENT 2
-GROUP ID-29
-GROUP MEMBERS-
-NAME-BHUPESH SINGH KAINTH
-ROLL NO.-2017040
-NAME- SHLOAK AGGARWAL
-ROLL NO.-2017107
-NAME-SHASHWAT JAIN
-ROLL NO.-2017103
-*/
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,12 +8,6 @@ ROLL NO.-2017103
 #include <ctype.h>
 #include<signal.h>
 
-/* 0644 indicates permissions */
-
-/*
-* redirect stdout to file “filename”. If the file does not exist create one,
-* otherwise, overwrite the existing file
-*/
 void redirectOutputToFile (char *file)
 {
     int o = open(file, O_CREAT|O_TRUNC|O_WRONLY, 0644);
@@ -32,9 +15,6 @@ void redirectOutputToFile (char *file)
     close(o);
 }
 
-/*
-* redirect stderr to filename
-*/
 void redirectErrorToFile (char *file)
 {
     int o = open(file, O_CREAT|O_TRUNC|O_WRONLY, 0644);
@@ -42,9 +22,6 @@ void redirectErrorToFile (char *file)
     close(o);
 }
 
-/*
-* If the file already exists, appends the stdout output, otherwise, creates a new file.
-*/
 void appendOutputToFile (char *file)
 {
     int o = open(file, O_CREAT|O_APPEND|O_WRONLY, 0644);
@@ -52,9 +29,6 @@ void appendOutputToFile (char *file)
     close(o);
 }
 
-/*
-* If the file already exists, appends the stderr output, otherwise, creates a new file.
-*/
 void appendErrorToFile (char *file)
 {
     int o = open(file, O_CREAT|O_APPEND|O_WRONLY, 0644);  
@@ -62,18 +36,11 @@ void appendErrorToFile (char *file)
     close(o);
 }
 
-/*
-* Redirects stderr to stdout
-*/
 void redirectErrorToOutput ()
 {
     dup2(STDOUT_FILENO, STDERR_FILENO);
 }
 
-/*
-* use file descriptor 0 (stdin) for filename. If command tries to read from
-* stdin, effectively it will read from filename.
-*/
 void redirectFileToInput (char *file)
 {
     int o = open(file, O_RDONLY);
@@ -81,9 +48,6 @@ void redirectFileToInput (char *file)
     close(o);
 }
 
-/*
-* Function to check the type of redirection operator(">",">>",">&","<").It calls the corresponding operator function
-*/
 int checkRedirection (char *p)
 {
     int r = 0;
@@ -148,11 +112,6 @@ int checkRedirection (char *p)
     return r;
 }
 
-/*
-* Function to carry out pipelining. It takes a commands array and its length
-* as input. An error is thrown if a pipe cannot be created or forking fails.
-* "execvp" is used to execute commands with a variable number of arguments.
-*/
 void pipefn (char *const cmds[], int lenCmds)
 {
     int fd[2];
@@ -173,9 +132,7 @@ void pipefn (char *const cmds[], int lenCmds)
         {
             close(fd[0]);
             dup2(outputStorage, 0);
-            dup2(fd[1], 1);
-            // dup2 lets you choose the file descriptor number that will be
-            // assigned and atomically closes and replaces it if it's already taken.
+            dup2(fd[1], 1);            
             int j = 0;
             char *p = strtok(cmds[i], " ");
             char *temp[10];
@@ -223,10 +180,6 @@ void pipefn (char *const cmds[], int lenCmds)
     }
 }
 
-/*
-* Trims provided string to remove leading and trailing whitespace.
-* Function referred from: cboard.cprogramming.com/c-programming/31839-trim-string-function-code.html
-*/
 char *trim (char *cmd)
 {
     int a = strlen ( cmd ) - 1;
@@ -250,8 +203,7 @@ char *trim (char *cmd)
 
 int  main ()
 {
-    signal(SIGINT,SIG_IGN);  /* Handles SIGINT i.e Ctrl+C interrupt.Kills the currently executing process,
-                                and starts waiting for an input command. */
+    signal(SIGINT,SIG_IGN);  
     while(1)
     {
         char sentence[100];
@@ -291,7 +243,7 @@ int  main ()
                 }
             }
         }
-        // This is the case when there is an internal command.
+     
         if (countpipe==0 && countout==0 && countin==0 && countappend==0 && countfd==0)
         {
             int j=0;
@@ -304,11 +256,11 @@ int  main ()
             }
             for(int y=0;y<j;y++)
             {
-                if(strcmp(a1[y],"cd")==0)  // Implementing cd on my own.
+                if(strcmp(a1[y],"cd")==0)  
                 {
                     char e[100];
                     chdir(a1[y+1]);
-                    printf("%s \n",getcwd(e,100)); // Printing the directory to check function validity.Prints the current directory
+                    printf("%s \n",getcwd(e,100)); 
                 }
                 else
                 {
