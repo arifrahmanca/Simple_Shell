@@ -25,8 +25,7 @@ int main(void)
         printf("mysh:$ ");
         fflush(stdout);
         pid_t pid;
-	pid = fork();
-	    
+
         char line[MAX_LINE + 1];
         char *ch = line;
         int i = 0;
@@ -69,6 +68,7 @@ int main(void)
         }
         
         char **args2 = get_history(args, &waitTime);
+        pid = fork();
         
         if(pid < 0) {
             printf("Fork creation failed.\n");
@@ -114,5 +114,3 @@ char** get_history(char **args, int *interval) {
     hisIndex[buffIndex%10] = *interval;
     return history[(buffIndex++)%10];
 }
-
-
