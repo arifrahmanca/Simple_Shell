@@ -9,9 +9,9 @@
 
 #define MAX_LINE		80
 
+char* history[10][MAX_LINE/2 + 1];
 int hisIndex[10];
 int buffIndex = 0;
-char* history[10][MAX_LINE/2 + 1];
 
 char** get_history(char** args, int *interval);
 
@@ -20,20 +20,22 @@ int main(void)
 {
     char *args[MAX_LINE/2 + 1];
     int should_run = 1;
-    
+
     char dir[MAX_LINE];
     chdir("/home");
     getcwd(dir,sizeof(dir));
-    
+
     while (should_run){
-        printf("mysh:~%s$ ",dir);
+        printf("mysh:~%s$ ",dir); // Prompt with directory
         fflush(stdout);
-        
+
         pid_t pid;
-       
+
         char line[MAX_LINE + 1];
         char *ch = line;
         int i = 0;
+        
+        // Initial Setup
         if(scanf("%[^\n]%*1[\n]", line) < 1) {
             if(scanf("%1[\n]", line) < 1) {
                 printf("Failure of standard input.\n");
@@ -43,6 +45,7 @@ int main(void)
 
         while(*ch ==' ' || *ch == '\t')
             ch++;
+            
         while(*ch != '\0'){
             char *temp = (char*)malloc((MAX_LINE + 1)*sizeof(char));
             args[i] = (char*)malloc((MAX_LINE + 1)*sizeof(char));
@@ -67,10 +70,13 @@ int main(void)
         } else {
             args[i] = NULL;
         }
-        
+
+        // Exit command
         if(strcmp(args[0],"exit") == 0){
             return 0;
         }
+        
+        // Command to browse Directory
         else if (strcmp(args[0],"cd") == 0){
             if (args[1] == NULL || strcmp(args[1],"~") == 0){
                     chdir("/home");
@@ -82,14 +88,19 @@ int main(void)
                 getcwd(dir, sizeof(dir));
         }
         
+        // Retrieve History
+
         char **args2 = get_history(args, &waitTime);
-        pid = fork();
         
+        // Fork process
+        
+        pid = fork();
+
         if(pid < 0) {
             printf("Fork creation failed.\n");
             return 1;
         } else if(pid == 0) {
-            execvp(args2[0], args2);	    
+            execvp(args2[0], args2);
             return 1;
         } else {
             if(waitTime) {
@@ -103,7 +114,7 @@ int main(void)
 	return 0;
 }
 
-char** get_history(char **args, int *interval) {
+char** get_history(char **args, int *interval) {   
     int i;
     if(args[1] == NULL && strcmp(args[0],"!!") == 0) {
         if(buffIndex > 0){
@@ -118,7 +129,7 @@ char** get_history(char **args, int *interval) {
             printf("History is blank.\n");
             return args;
         }
-    }   
+    }
 
     for(i = 0; i < (MAX_LINE/2+1) && history[buffIndex%10][i] != NULL; i++)
         free(history[buffIndex%10][i]);
