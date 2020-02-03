@@ -6,41 +6,33 @@
 #include <sys/wait.h>
 #include <dirent.h>
 
-/*
-Splits command string into tokens separated by " " , "\n" or "\t"
-Tokens are stored in arg
-The function returns the position of last argument, or -1 if there's no command
-*/
+
 int arguments(char* command,char** arg)
 {
-        arg[0]=strtok(command," \n\t"); //ignore " " and "\n"
-        if (arg[0]==NULL){ // if no arguments
-              return -1; //no command
+        arg[0]=strtok(command," \n\t"); 
+        if (arg[0]==NULL){ 
+              return -1; 
         }
         int i;
         for (i=1;i<5; i++){
-            arg[i]=strtok(NULL," \n\t"); // next token from command until returns NULL
+            arg[i]=strtok(NULL," \n\t"); 
             if (arg[i]==NULL)
               break;
         }
-        return (i-1); // pos of last arg
+        return (i-1); 
 }
 
 
-/*
-If arg has "&" ,delete "&" and return 1
-Else return 0
-*/
 int ampersand(char** arg)
 {
-    if (strcmp((*arg),"&")==0) // "&" token
+    if (strcmp((*arg),"&")==0) 
     {
         (*arg)=NULL;
         return 1;
     }
-    else if (((*arg)[strlen(*arg)-1])=='&') // if token has '&' as last character
+    else if (((*arg)[strlen(*arg)-1])=='&') 
     {
-        ((*arg)[strlen(*arg)-1])='\0'; //last character
+        ((*arg)[strlen(*arg)-1])='\0'; 
         return 1;
     }
     return 0;
@@ -49,23 +41,23 @@ int ampersand(char** arg)
 
 int main()
 {
-    char command[100]; // Command (100 characters max)
+    char command[100]; 
 
-    char directory[100]; //Current directory
-   // chdir("/home"); // Default directory
+    char directory[100]; 
+    chdir("/home"); 
     getcwd(directory,sizeof(directory));
     int index=0;
     int boolVar=0;
     while(1){
         if(boolVar==0){
-            printf("mysh:~$ "); //  PRINT MySHell: "Directory"$
-            fgets(command,sizeof(command),stdin); //new command
+            printf("mysh:~%s$ ",directory); 
+            fgets(command,sizeof(command),stdin); 
         }else{
             boolVar=0;printf("\n");
         }
 
         if (strchr(command,'|')==NULL){
-            char* arg[6]; // Maximum arguments 5 (arg[5]=NULL)
+            char* arg[6]; 
             arg[5]=NULL;
             int last_arg;
             last_arg=arguments(command,arg);
@@ -74,32 +66,43 @@ int main()
                 exit(EXIT_SUCCESS);
             }
 
+        //  ----------   COMMAND CD    ----------
+            else if (strcmp(arg[0],"cd")==0){
+                if (arg[1]==NULL || strcmp(arg[1],"~")==0){ 
+                    chdir("/home");  
+                }else{
+                    strcat(directory,"/");
+                    strcat(directory,arg[1]); 
+                    chdir(directory); 
+                }
+                getcwd(directory,sizeof(directory)); 
+            }
             //  ----------  FORK PROCESS   ----------
             else{
                 int background;
-                background=ampersand(&(arg[last_arg])); //reference for edit
+                background=ampersand(&(arg[last_arg])); 
 
                 //   FORK
                 pid_t id=fork();
-                if (id==0){            // child process
+                if (id==0){            
                     int exe_status;
-                    exe_status=execvp(arg[0],arg); // arg[0] -> file path name or name (PATH Variable)
+                    exe_status=execvp(arg[0],arg); 
                     if (exe_status==-1){
                         printf("%s: command not found\n",arg[0]);
                     }
                     exit(EXIT_SUCCESS);
                 }
-                else if (id>0){        // parent process
+                else if (id>0){        
                     int child_status;
 
                     signal(SIGCHLD,SIG_IGN);
 
-                    if (!background)   // not background child process
+                    if (!background)   
                     {
                         wait(&child_status);
                     }
                 }
-                else{                   // fork error
+                else{                   
                     exit(EXIT_FAILURE);
                 }
             }
@@ -108,13 +111,13 @@ int main()
         else{
             char* command_tok[2];
 
-            command_tok[0]=strtok(command,"|"); // left commnad
-            command_tok[1]=strtok(NULL,"|");   // right command
+            command_tok[0]=strtok(command,"|"); 
+            command_tok[1]=strtok(NULL,"|");   
 
             if (command_tok[0]==NULL || command_tok[1]==NULL)
             {
                 printf("Syntax error\n");
-                continue;   // new command
+                continue;   
             }
 
             char* arg_tok[2][6];
@@ -125,16 +128,16 @@ int main()
             last_arg_tok[0]=arguments(command_tok[0],arg_tok[0]);
             last_arg_tok[1]=arguments(command_tok[1],arg_tok[1]);
 
-            if (last_arg_tok[0]==-1 || last_arg_tok[1]==-1) // no left or right command
+            if (last_arg_tok[0]==-1 || last_arg_tok[1]==-1) 
             {
                 printf("Syntax error\n");
                 continue;
             }
 
             int background;
-            background=ampersand(&(arg_tok[1][last_arg_tok[1]])); // right command's last token
+            background=ampersand(&(arg_tok[1][last_arg_tok[1]])); 
 
-            int fd[2]; // file descriptors
+            int fd[2]; 
             pipe(fd);
 
             pid_t id[2];
@@ -143,31 +146,30 @@ int main()
             {
                 id[i]=fork();
 
-                if (id[i]==0) //  child process
+                if (id[i]==0) 
                 {
-                    if (i==0) //left process
+                    if (i==0) 
                     {
                         close(fd[0]);
                         dup2(fd[1],1);
                     }
-                    else   // right process
+                    else   
                     {
                         close(fd[1]);
                         dup2(fd[0],0);
                     }
                     int exe_status;
-                    exe_status=execvp(arg_tok[i][0],arg_tok[i]); // arg[0] -> file path name or name (PATH Variable)
+                    exe_status=execvp(arg_tok[i][0],arg_tok[i]); 
                     if (exe_status==-1){
                         printf("%s: command not found\n",arg_tok[i][0]);
                     }
                     exit(EXIT_SUCCESS);
                 }
-                else if (id[i]>0)  // parent process
+                else if (id[i]>0)  
                 {
                     if (i==0)
-                      continue;   // fork right child
+                      continue;  
 
-                    // Children have been executed
                     close(fd[0]);
                     close(fd[1]);
 
@@ -175,13 +177,13 @@ int main()
 
                     int child_status;
 
-                    if (!background)   // not background child process
+                    if (!background)  
                     {
                         wait(&child_status);
                     }
                 }
                 else
-                {                   // fork error
+                {                   
                     exit(EXIT_FAILURE);
                 }
             }
