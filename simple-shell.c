@@ -21,11 +21,16 @@ int main(void)
     char *args[MAX_LINE/2 + 1];
     int should_run = 1;
     
+    char dir[MAX_LINE];
+    chdir("/home");
+    getcwd(dir,sizeof(dir));
+    
     while (should_run){
-        printf("mysh:$ ");
+        printf("mysh:~%s$ ",dir);
         fflush(stdout);
+        
         pid_t pid;
-
+       
         char line[MAX_LINE + 1];
         char *ch = line;
         int i = 0;
@@ -65,6 +70,16 @@ int main(void)
         
         if(strcmp(args[0],"exit") == 0){
             return 0;
+        }
+        else if (strcmp(args[0],"cd") == 0){
+            if (args[1] == NULL || strcmp(args[1],"~") == 0){
+                    chdir("/home");
+                }else{
+                    strcat(dir, "/");
+                    strcat(dir, args[1]);
+                    chdir(dir);
+                }
+                getcwd(dir, sizeof(dir));
         }
         
         char **args2 = get_history(args, &waitTime);
