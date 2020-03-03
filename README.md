@@ -1,1 +1,1 @@
-# EECS3221_MiniProject1
+# Simple_Shell
